@@ -81,7 +81,6 @@ jobs:
           target: ${{ matrix.platform.target }}
           toolchain: ${{ matrix.toolchain }}
           args: "--locked --profile slow-release"
-          strip: true
       - name: Package as archive
         shell: bash
         run: |
