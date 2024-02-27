@@ -3,6 +3,7 @@ use std::path::PathBuf;
 
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]
+/// Framer will composite a screenshot onto a device frame, by intelligently finding the space for the screenshot.
 pub(crate) struct Args {
     /// Path to device frame image.
     #[arg()]

@@ -1,0 +1,27 @@
+[package]
+name = "framerust"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+image = { version = "0.24.8", features = [] }
+oxipng = "9.0.0"
+imagequant = "4.3.0"
+lodepng = "3.10.1"
+rgb = "0.8.37"
+clap = { version = "4.5.1", features = ["derive"] }
+human_bytes = "0.4.3"
+spinoff = "0.8.0"
+colored = "2.1.0"
+anyhow = "1.0.80"
+thiserror = "1.0.57"
+
+[profile.slow-release]
+inherits = "release"
+strip = true  # Automatically strip symbols from the binary.
+opt-level = "z"  # Optimize for size.
+lto = true  # Enable link-time optimization.
+codegen-units = 1  # Use only one codegen unit to reduce binary size.
+panic = "abort"
