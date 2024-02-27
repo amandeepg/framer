@@ -7,6 +7,7 @@ on:
     tags-ignore:
       - "framer-*"
   pull_request:
+  workflow_dispatch:
 
 env:
   CRATE_NAME: framer
