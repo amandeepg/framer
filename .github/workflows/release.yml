@@ -1,4 +1,4 @@
-name: Tests and release
+name: Release
 
 on:
   create:
@@ -62,7 +62,6 @@ jobs:
             name: framer-Darwin-aarch64.tar.gz
         toolchain:
           - stable
-          - beta
     steps:
       - uses: actions/checkout@v4
       - name: Cache cargo & target directories
