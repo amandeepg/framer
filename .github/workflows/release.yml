@@ -1,11 +1,9 @@
 name: Tests and release
 
 on:
-  push:
-    branches:
-      - "**"
-    tags-ignore:
-      - "framer-*"
+  create:
+    tags:
+      - v*
   pull_request:
   workflow_dispatch:
 
@@ -66,7 +64,7 @@ jobs:
           - stable
           - beta
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Cache cargo & target directories
         uses: Swatinem/rust-cache@v2
       - name: Configure Git
@@ -82,12 +80,12 @@ jobs:
           command: "build"
           target: ${{ matrix.platform.target }}
           toolchain: ${{ matrix.toolchain }}
-          args: "--locked --release"
+          args: "--locked --profile slow-release"
           strip: true
       - name: Package as archive
         shell: bash
         run: |
-          cd target/${{ matrix.platform.target }}/release
+          cd target/${{ matrix.platform.target }}/slow-release
           if [[ "${{ matrix.platform.os }}" == "windows-latest" ]]; then
             7z a ../../../${{ matrix.platform.name }} ${{ matrix.platform.bin }}
           else
