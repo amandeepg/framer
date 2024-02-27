@@ -5,7 +5,7 @@ Built in Rust.
 
 Usage:
 ```
-Usage: framerust [OPTIONS] <DEVICE_FRAME_PATH> <SCREENSHOT_PATH>
+Usage: framer [OPTIONS] <DEVICE_FRAME_PATH> <SCREENSHOT_PATH>
 
 Arguments:
   <DEVICE_FRAME_PATH>  Path to device frame image
