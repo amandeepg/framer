@@ -25,4 +25,4 @@ Options:
 ### Example
 Take the following 2 files as input, the frame with marketing text, and the screenshot, produces the 3rd image, the composited image.
 
-# <img src="./docs/frame1.webp" height="500"/> &nbsp;**+**&nbsp; <img src="./docs/screenshot1.webp" height="500"/> &nbsp;&nbsp;&nbsp;**=**&nbsp;&nbsp;&nbsp; <img src="./docs/framescr1.webp" height="500"/>
+# <img src="./docs/frame1.webp" height="300"/> &nbsp;**+**&nbsp; <img src="./docs/screenshot1.webp" height="300"/> &nbsp;&nbsp;&nbsp;**=**&nbsp;&nbsp;&nbsp; <img src="./docs/framescr1.webp" height="300"/>
