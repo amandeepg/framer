@@ -9,7 +9,7 @@ use std::time::Instant;
 
 use crate::args::Args;
 use crate::duration_ext::DurationExt;
-use anyhow::{anyhow, Context, Result};
+use anyhow::{Context, Result};
 use clap::Parser;
 use colored::Colorize;
 use human_bytes::human_bytes;
@@ -38,7 +38,7 @@ fn search_for_non_transparent_pixel(
     let mut center_x = width / (100 / top_search_axis as u32);
     let mut center_y = height / (100 / left_search_axis as u32);
 
-    while center_y > 0 && center_x > 0 && center_x < width && center_y < height {
+    while center_y > 0 && center_x > 0 && center_x < width - 1 && center_y < height - 1 {
         if img.get_pixel(center_x, center_y)[3] == 255 {
             return Ok((center_x, center_y));
         }
@@ -50,10 +50,7 @@ fn search_for_non_transparent_pixel(
         }
     }
 
-    Err(anyhow!(
-        "Could not find non-transparent pixel in direction {:?}",
-        dir
-    ))
+    Ok((center_x, center_y))
 }
 
 fn find_transparent_pixels(
