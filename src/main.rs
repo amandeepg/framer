@@ -89,6 +89,34 @@ fn find_transparent_pixels(
     )
 }
 
+fn find_contiguous_area(
+    img: &RgbaImage,
+    grid: &mut Vec<Vec<bool>>,
+    start_x: isize,
+    start_y: isize,
+    max_x: isize,
+    max_y: isize,
+) {
+    let mut stack = vec![(start_x, start_y)];
+
+    while let Some((x, y)) = stack.pop() {
+        if x < 0 || y < 0 || x >= max_x || y >= max_y || grid[x as usize][y as usize] {
+            continue;
+        }
+
+        if img.get_pixel(x as u32, y as u32)[3] == 255 {
+            continue;
+        }
+
+        grid[x as usize][y as usize] = true;
+
+        stack.push((x + 1, y)); // right
+        stack.push((x - 1, y)); // left
+        stack.push((x, y + 1)); // down
+        stack.push((x, y - 1)); // up
+    }
+}
+
 fn overlay_image(
     base_img: &RgbaImage,
     overlay_png_path: &Path,
@@ -101,6 +129,15 @@ fn overlay_image(
         &"Overlaying images ...".to_string(),
         &(|_: &_| Ok("Overlayed images")),
         || {
+            let mut allowed_pixels = vec![vec![false; base_img.height() as usize]; base_img.width() as usize];
+            find_contiguous_area(
+                base_img,
+                &mut allowed_pixels,
+                (base_img.width() / 2) as isize,
+                (base_img.height() / 2) as isize,
+                base_img.width() as isize,
+                base_img.height() as isize,
+            );
             let mut base_img = base_img.clone();
             let overlay_img = image::open(overlay_png_path)?.to_rgba8();
 
@@ -124,7 +161,7 @@ fn overlay_image(
             for (x_offset, y_offset, pixel) in overlay_img.enumerate_pixels() {
                 let base_pixel = base_img.get_pixel_mut(x + x_offset, y + y_offset);
                 let base_alpha = base_pixel[3];
-                if (base_alpha < 255) && (pixel[3] > 0) {
+                if (base_alpha < 255) && (pixel[3] > 0) && allowed_pixels[(x + x_offset) as usize][(y + y_offset) as usize] {
                     let pixel_alpha = pixel[3] as f32 / 255.0;
                     let base_alpha = base_alpha as f32 / 255.0;
                     for i in 0..3 {
