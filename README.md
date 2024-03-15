@@ -22,7 +22,14 @@ Options:
 
 ```
 
-### Example
-Take the following 2 files as input, the frame with marketing text, and the screenshot, produces the 3rd image, the composited image.
+Then you can create your frame with marketing text around it once, and run `framer` in a script to automatically put in updated screenshots.
 
-# <img src="./docs/frame1.webp" height="300"/> &nbsp;**+**&nbsp; <img src="./docs/screenshot1.webp" height="300"/> &nbsp;&nbsp;&nbsp;**=**&nbsp;&nbsp;&nbsp; <img src="./docs/framescr1.webp" height="300"/>
+### Examples
+Our first example is an Android device with some marketing text already created. We can then run `framer` to put in a screenshot, which produces the composited image:
+# <a href="https://raw.githubusercontent.com/amandeepg/framer/master/docs/frame1.webp"><img src="./docs/frame1.webp" height="300"/></a> &nbsp;**+**&nbsp; <a href="https://raw.githubusercontent.com/amandeepg/framer/master/docs/screenshot1.webp"><img src="./docs/screenshot1.webp" height="300"/></a> &nbsp;&nbsp;&nbsp;**=**&nbsp;&nbsp;&nbsp; <a href="https://raw.githubusercontent.com/amandeepg/framer/master/docs/framescr1.webp"><img src="./docs/framescr1.webp" height="300"/></a>
+
+Of course `framer` is agnostic to the actual device, so an iPhone frame and an iPhone screenshot will work just as well:
+# <a href="https://raw.githubusercontent.com/amandeepg/framer/master/docs/frame2.webp"><img src="./docs/frame2.webp" height="300"/></a> &nbsp;**+**&nbsp; <a href="https://raw.githubusercontent.com/amandeepg/framer/master/docs/screenshot2.webp"><img src="./docs/screenshot2.webp" height="300"/></a> &nbsp;&nbsp;&nbsp;**=**&nbsp;&nbsp;&nbsp; <a href="https://raw.githubusercontent.com/amandeepg/framer/master/docs/framescr2.webp"><img src="./docs/framescr2.webp" height="300"/></a>
+
+We can even go further and use `framer` to composite web screenshots onto a laptop frame:
+# <a href="https://raw.githubusercontent.com/amandeepg/framer/master/docs/frame3.webp"><img src="./docs/frame3.webp" height="150"/></a> &nbsp;**+**&nbsp; <a href="https://raw.githubusercontent.com/amandeepg/framer/master/docs/screenshot3.webp"><img src="./docs/screenshot3.webp" height="150"/></a> &nbsp;&nbsp;&nbsp;**=**&nbsp;&nbsp;&nbsp; <a href="https://raw.githubusercontent.com/amandeepg/framer/master/docs/framescr3.webp"><img src="./docs/framescr3.webp" height="150"/></a>
