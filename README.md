@@ -1,7 +1,9 @@
 # Framer
 Framer will composite a screenshot onto a device frame, by intelligently finding the space for the screenshot.
 
-Built in Rust.
+Built in Rust. 
+
+[![Build with Rust](https://github.com/amandeepg/framer/actions/workflows/rust.yml/badge.svg)](https://github.com/amandeepg/framer/actions/workflows/rust.yml)
 
 ### Usage
 ```
