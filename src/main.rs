@@ -1,106 +1,106 @@
-mod args;
-mod duration_ext;
-
-use std::fmt::Debug;
 use std::fs::File;
 use std::io::Write;
 use std::path::Path;
 use std::time::Instant;
 
-use crate::args::Args;
-use crate::duration_ext::DurationExt;
 use anyhow::{Context, Result};
 use clap::Parser;
 use colored::Colorize;
 use human_bytes::human_bytes;
-use image::{imageops, DynamicImage, RgbaImage};
-use imageops::{crop, resize, Lanczos3};
+use image::{DynamicImage, imageops, RgbaImage};
+use imageops::{crop, Lanczos3, resize};
 use lodepng::Encoder;
 use oxipng::{optimize_from_memory, Options};
 use rgb::FromSlice;
-use spinoff::{spinners, Color, Spinner};
+use spinoff::{Color, Spinner, spinners};
 
-#[derive(Debug)]
-enum Direction {
-    Up,
-    Down,
-    Left,
-    Right,
-}
+use crate::args::Args;
+use crate::duration_ext::DurationExt;
 
-fn search_for_non_transparent_pixel(
-    img: &RgbaImage,
-    dir: &Direction,
-    top_search_axis: u8,
-    left_search_axis: u8,
-) -> Result<(u32, u32)> {
-    let (width, height) = img.dimensions();
-    let mut center_x = width / (100 / top_search_axis as u32);
-    let mut center_y = height / (100 / left_search_axis as u32);
+mod args;
+mod duration_ext;
 
-    while center_y > 0 && center_x > 0 && center_x < width - 1 && center_y < height - 1 {
-        if img.get_pixel(center_x, center_y)[3] == 255 {
-            return Ok((center_x, center_y));
-        }
-        match dir {
-            Direction::Up => center_y -= 1,
-            Direction::Down => center_y += 1,
-            Direction::Left => center_x -= 1,
-            Direction::Right => center_x += 1,
+fn transpose(matrix: &Vec<Vec<bool>>) -> Vec<Vec<bool>> {
+    if matrix.is_empty() || matrix[0].is_empty() {
+        return vec![]; // Return an empty matrix if input is empty or rows are empty
+    }
+
+    let rows = matrix.len();
+    let cols = matrix[0].len();
+
+    // Initialize a new vector of vectors with dimensions swapped
+    let mut transposed = vec![vec![false; rows]; cols];
+
+    for i in 0..rows {
+        for j in 0..cols {
+            // Swap the row and column indices when assigning values
+            transposed[j][i] = matrix[i][j];
         }
     }
 
-    Ok((center_x, center_y))
+    transposed
 }
 
-fn find_transparent_pixels(
-    img: &RgbaImage,
-    top_search_axis: u8,
-    left_search_axis: u8,
-) -> Result<(u32, u32, u32, u32)> {
+fn find_transparent_pixels(img: &RgbaImage, x_perc: u8, y_perc: u8) -> Result<(u32, u32, u32, u32, Vec<Vec<bool>>)> {
     with_spinner(
         &"Finding coords of device frame ...",
-        &(|res: &(u32, u32, u32, u32)| {
+        &(|res: &(u32, u32, u32, u32, Vec<Vec<bool>>)| {
             Ok(format!(
                 "Found coordinates of device frame: top={}px, bottom={}px, left={}px, right={}px",
                 res.0, res.1, res.2, res.3,
             ))
         }),
         || {
-            let directions = [
-                Direction::Up,
-                Direction::Down,
-                Direction::Left,
-                Direction::Right,
-            ];
-            let coords = directions
-                .iter()
-                .map(|dir| {
-                    search_for_non_transparent_pixel(&img, dir, top_search_axis, left_search_axis)
-                })
-                .collect::<Result<Vec<_>>>()?;
+            let mut contiguous_area = vec![vec![false; img.height() as usize]; img.width() as usize];
+            find_contiguous_area(
+                img,
+                &mut contiguous_area,
+                (img.width() as f32 * (x_perc as f32 / 100.0)) as usize,
+                (img.height() as f32 * (y_perc as f32 / 100.0)) as usize,
+            );
+            let (first_x, last_x) =
+                find_first_last(&transpose(&contiguous_area), 0, img.height() - 1);
+            let (first_y, last_y) =
+                find_first_last(&contiguous_area, 0, img.width() - 1);
+
             Ok((
-                coords[0].1 - 1,
-                coords[1].1 + 1,
-                coords[2].0 - 1,
-                coords[3].0 + 1,
+                first_y as u32,
+                last_y as u32,
+                first_x as u32,
+                last_x as u32,
+                contiguous_area,
             ))
         },
+    )
+}
+
+fn find_first_last(contiguous_area: &Vec<Vec<bool>>, min: u32, max: u32) -> (usize, usize) {
+    (
+        contiguous_area
+            .iter()
+            .map(|row| row.iter().position(|&x| x).unwrap_or(max as usize))
+            .min()
+            .unwrap_or(min as usize),
+        contiguous_area
+            .iter()
+            .map(|row| row.iter().rposition(|&x| x).unwrap_or(min as usize))
+            .max()
+            .unwrap_or(max as usize)
     )
 }
 
 fn find_contiguous_area(
     img: &RgbaImage,
     grid: &mut Vec<Vec<bool>>,
-    start_x: isize,
-    start_y: isize,
-    max_x: isize,
-    max_y: isize,
+    start_x: usize,
+    start_y: usize,
 ) {
     let mut stack = vec![(start_x, start_y)];
+    let max_x = img.width() as isize;
+    let max_y = img.height() as isize;
 
     while let Some((x, y)) = stack.pop() {
-        if x < 0 || y < 0 || x >= max_x || y >= max_y || grid[x as usize][y as usize] {
+        if x <= 0 || y <= 0 || x >= max_x as usize || y >= max_y as usize || grid[x][y] {
             continue;
         }
 
@@ -108,7 +108,7 @@ fn find_contiguous_area(
             continue;
         }
 
-        grid[x as usize][y as usize] = true;
+        grid[x][y] = true;
 
         stack.push((x + 1, y)); // right
         stack.push((x - 1, y)); // left
@@ -119,6 +119,7 @@ fn find_contiguous_area(
 
 fn overlay_image(
     base_img: &RgbaImage,
+    contiguous_area: &Vec<Vec<bool>>,
     overlay_png_path: &Path,
     x: u32,
     y: u32,
@@ -129,15 +130,6 @@ fn overlay_image(
         &"Overlaying images ...".to_string(),
         &(|_: &_| Ok("Overlayed images")),
         || {
-            let mut allowed_pixels = vec![vec![false; base_img.height() as usize]; base_img.width() as usize];
-            find_contiguous_area(
-                base_img,
-                &mut allowed_pixels,
-                (base_img.width() / 2) as isize,
-                (base_img.height() / 2) as isize,
-                base_img.width() as isize,
-                base_img.height() as isize,
-            );
             let mut base_img = base_img.clone();
             let overlay_img = image::open(overlay_png_path)?.to_rgba8();
 
@@ -161,7 +153,7 @@ fn overlay_image(
             for (x_offset, y_offset, pixel) in overlay_img.enumerate_pixels() {
                 let base_pixel = base_img.get_pixel_mut(x + x_offset, y + y_offset);
                 let base_alpha = base_pixel[3];
-                if (base_alpha < 255) && (pixel[3] > 0) && allowed_pixels[(x + x_offset) as usize][(y + y_offset) as usize] {
+                if (base_alpha < 255) && (pixel[3] > 0) && contiguous_area[(x + x_offset) as usize][(y + y_offset) as usize] {
                     let pixel_alpha = pixel[3] as f32 / 255.0;
                     let base_alpha = base_alpha as f32 / 255.0;
                     for i in 0..3 {
@@ -289,17 +281,18 @@ fn main() -> Result<()> {
                 .context("No output path")?
                 .to_string_lossy(),
         )
-        .bold()
+            .bold()
     );
     println!();
 
     let base_img = image::open(args.device_frame_path)?.to_rgba8();
 
-    let (top, bottom, left, right) =
-        find_transparent_pixels(&base_img, args.top_search_axis, args.left_search_axis)?;
+    let (top, bottom, left, right, contiguous_area) =
+        find_transparent_pixels(&base_img, args.x_perc, args.y_perc)?;
 
     let overlayed_img = overlay_image(
         &base_img,
+        &contiguous_area,
         args.screenshot_path.as_path(),
         left,
         top,

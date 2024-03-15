@@ -14,14 +14,13 @@ Arguments:
   <SCREENSHOT_PATH>    Path to screenshot image
 
 Options:
-  -o <OUTPUT_PATH>                  Path to composited output image [default: ./result.png]
-  -t, --top-search-axis <percent>   How far, as a percentage, from the left edge to search for the top edge upwards and bottom edge downwards. For example if there is a notch, the default of 25 may hit the notch rather than the top of the frame [default: 25]
-  -l, --left-search-axis <percent>  How far, as a percentage, from the top edge to search for the left edge leftwards and the right edge rightwards [default: 50]
-      --oxipng-level <level>        The level of optimization to use with oxipng (0-6), lower is faster [default: 4]
-      --pngquant-speed <speed>      The level of optimization to use with pngquant (1-10), higher is faster [default: 4]
-  -h, --help                        Print help
-  -V, --version                     Print version
-
+  -o <OUTPUT_PATH>              Path to composited output image [default: result.png]
+  -x, --x-perc <percent>        How far, as a percentage, from the left edge that the screenshot area is at [default: 50]
+  -y, --y-perc <percent>        How far, as a percentage, from the top edge that the screenshot area is at [default: 50]
+      --oxipng-level <level>    The level of optimization to use with oxipng (0-6), lower is faster [default: 4]
+      --pngquant-speed <speed>  The level of optimization to use with pngquant (1-10), higher is faster [default: 4]
+  -h, --help                    Print help
+  -V, --version                 Print version
 ```
 
 Then you can create your frame with marketing text around it once, and run `framer` in a script to automatically put in updated screenshots.
